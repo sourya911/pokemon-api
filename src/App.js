@@ -1,10 +1,11 @@
 import React from 'react';
 import './index.css';
+import PokemList from './components/PokemList';
 
 function App() {
   return (
     <div className="App bg-black min-h-screen text-white">
-      <h1 className="text-5xl font-bold text-center">Pokémon List</h1>
+      <PokemList/>
     </div>
   );
 }
