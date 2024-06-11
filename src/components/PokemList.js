@@ -4,7 +4,7 @@ import PokemCard from './PokemCard';
 import PokemModal from './PokemModal';
 import Filter from './Filter';
 import { FaSun, FaMoon, FaList, FaTh } from 'react-icons/fa';
-import PokemTable from './PokemTable';
+import PokemTable from './PokemTable'; // Import the PokemTable component here
 
 function PokemList() {
   const [pokemon, setPokemon] = useState([]); // stores pokemon data
@@ -16,9 +16,9 @@ function PokemList() {
   const [isDarkMode, setIsDarkMode] = useState(true); // toggle between modes
   const [isLoading, setIsLoading] = useState(false); // to show loading state
   const [errorMessage, setErrorMessage] = useState(''); // show error message if presnet any
-  const [isGridView, setIsGridView] = useState(true); //toggle between grid and table view
-  const [currentPage, setCurrentPage] = useState(1);  // stores page number and tracks pagination
-  const itemsPerPage = 16; // number of pokemons per page
+  const [isGridView, setIsGridView] = useState(true); // State to track the view mode
+  const [currentPage, setCurrentPage] = useState(1);  // State to track the current page
+  const itemsPerPage = 16; // Number of items to display per page
  
   const max_poke = 1302;  //only this many pokemons presnet only , this helps inrender only this much pokemons if user needed much more than that
 
