@@ -3,7 +3,8 @@ import axios from 'axios';
 import PokemCard from './PokemCard';
 import PokemModal from './PokemModal';
 import Filter from './Filter';
-import { FaSun, FaMoon } from 'react-icons/fa';
+import { FaSun, FaMoon, FaList, FaTh } from 'react-icons/fa';
+import PokemTable from './PokemTable'; // Import the PokemTable component here
 
 function PokemList() {
   const [pokemon, setPokemon] = useState([]);
@@ -11,16 +12,17 @@ function PokemList() {
   const [types, setTypes] = useState([]);
   const [selectedType, setSelectedType] = useState('');
   const [pokemonLimit, setPokemonLimit] = useState(10);
-  const [inputLimit, setInputLimit] = useState(10); 
-  const [isDarkMode, setIsDarkMode] = useState(true); 
+  const [inputLimit, setInputLimit] = useState(10);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(''); 
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isGridView, setIsGridView] = useState(true); // State to track the view mode
 
-  const max_poke = 1302; 
+  const max_poke = 1302;
 
   useEffect(() => {
     const fetchPokemon = async () => {
-      setIsLoading(true); 
+      setIsLoading(true);
       try {
         const response = await axios.get(`https://pokeapi.co/api/v2/pokemon?limit=${pokemonLimit}`);
         const pokemonData = await Promise.all(
@@ -33,7 +35,7 @@ function PokemList() {
       } catch (error) {
         console.error("Error fetching Pokémon data:", error);
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
@@ -84,6 +86,10 @@ function PokemList() {
     setIsDarkMode(!isDarkMode);
   };
 
+  const toggleView = () => {
+    setIsGridView(!isGridView);
+  };
+
   const filteredPokemon = selectedType
     ? pokemon.filter(p => p.types && p.types.some(t => t.type.name === selectedType))
     : pokemon;
@@ -93,13 +99,22 @@ function PokemList() {
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className={`text-5xl font-bold text-center mb-4 ${isDarkMode ? 'text-yellow-500' : 'text-blue-600'} `}>Pokémon List</h1>
-          <button
-            onClick={toggleTheme}
-            className={`p-2 rounded-full ${isDarkMode ? 'bg-yellow-500 text-black' : 'bg-blue-600 text-white'} flex items-center space-x-2 hover:scale-105 transform transition-transform duration-300`}
-          >
-            {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
-            <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-          </button>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-full ${isDarkMode ? 'bg-yellow-500 text-black' : 'bg-blue-600 text-white'} flex items-center space-x-2 hover:scale-105 transform transition-transform duration-300`}
+            >
+              {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
+              <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+            <button
+              onClick={toggleView}
+              className={`p-2 rounded-full ${isDarkMode ? 'bg-yellow-500 text-black' : 'bg-blue-600 text-white'} flex items-center space-x-2 hover:scale-105 transform transition-transform duration-300`}
+            >
+              {isGridView ? <FaList size={20} /> : <FaTh size={20} />}
+              <span>{isGridView ? 'Table View' : 'Grid View'}</span>
+            </button>
+          </div>
         </div>
         <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0 md:space-x-4">
           <div className="flex items-center space-x-4">
@@ -126,17 +141,17 @@ function PokemList() {
             <div className={`text-2xl font-bold ${isDarkMode ? 'text-yellow-500' : 'text-blue-600'}`}>Loading Pokémon...</div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredPokemon.length > 0 ? (
-              filteredPokemon.map((poke) => (
-                <PokemCard key={poke.id} pokemon={poke} onPokemonClick={handlePokemonClick} isDarkMode={isDarkMode} />
-              ))
-            ) : (
-              <div className="col-span-4 text-center">
-                <h2 className="text-2xl font-bold">No Pokémon found with the given filter.</h2>
+          <>
+            {isGridView ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredPokemon.map((poke) => (
+                  <PokemCard key={poke.id} pokemon={poke} onPokemonClick={handlePokemonClick} isDarkMode={isDarkMode} />
+                ))}
               </div>
+            ) : (
+              <PokemTable pokemon={filteredPokemon} onPokemonClick={handlePokemonClick} isDarkMode={isDarkMode} /> // Pass props to PokemTable component
             )}
-          </div>
+          </>
         )}
         {selectedPokemon && (
           <PokemModal pokemon={selectedPokemon} onClose={handleCloseModal} isDarkMode={isDarkMode} />
