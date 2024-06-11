@@ -17,6 +17,8 @@ function PokemList() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isGridView, setIsGridView] = useState(true); // State to track the view mode
+  const [currentPage, setCurrentPage] = useState(1); // State to track the current page
+  const itemsPerPage = 16; // Number of items to display per page
 
   const max_poke = 1302;
 
@@ -33,6 +35,7 @@ function PokemList() {
         );
         setPokemon(pokemonData);
       } catch (error) {
+        setErrorMessage('Error fetching Pokémon data. Please try again later.');
         console.error("Error fetching Pokémon data:", error);
       } finally {
         setIsLoading(false);
@@ -44,6 +47,7 @@ function PokemList() {
         const response = await axios.get('https://pokeapi.co/api/v2/type');
         setTypes(response.data.results);
       } catch (error) {
+        setErrorMessage('Error fetching types data. Please try again later.');
         console.error("Error fetching types data:", error);
       }
     };
@@ -90,9 +94,33 @@ function PokemList() {
     setIsGridView(!isGridView);
   };
 
+  const handleNextPage = () => {
+    if (endIndex < filteredPokemon.length) {
+      setCurrentPage((prevPage) => prevPage + 1);
+      setErrorMessage(''); // Clear any previous error message
+    } else {
+      alert('You have reached the last page of available Pokémon.')
+      setErrorMessage('You have reached the last page of available Pokémon.');
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prevPage) => prevPage - 1);
+      setErrorMessage(''); 
+    } else {
+      alert('This is the first page.')
+      setErrorMessage('This is the first page.');
+    }
+  };
+
   const filteredPokemon = selectedType
     ? pokemon.filter(p => p.types && p.types.some(t => t.type.name === selectedType))
     : pokemon;
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPokemon = filteredPokemon.slice(startIndex, endIndex);
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
@@ -142,17 +170,38 @@ function PokemList() {
           </div>
         ) : (
           <>
-            {isGridView ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filteredPokemon.map((poke) => (
-                  <PokemCard key={poke.id} pokemon={poke} onPokemonClick={handlePokemonClick} isDarkMode={isDarkMode} />
-                ))}
-              </div>
+            {currentPokemon.length > 0 ? (
+              isGridView ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {currentPokemon.map((poke) => (
+                    <PokemCard key={poke.id} pokemon={poke} onPokemonClick={handlePokemonClick} isDarkMode={isDarkMode} />
+                  ))}
+                </div>
+              ) : (
+                <PokemTable pokemon={currentPokemon} onPokemonClick={handlePokemonClick} isDarkMode={isDarkMode} /> // Pass props to PokemTable component
+              )
             ) : (
-              <PokemTable pokemon={filteredPokemon} onPokemonClick={handlePokemonClick} isDarkMode={isDarkMode} /> // Pass props to PokemTable component
+              <div className={`text-center ${isDarkMode ? 'text-yellow-500' : 'text-blue-600'}`}>No Pokémon available.</div>
             )}
           </>
         )}
+        <div className="flex justify-between mt-8 items-center">
+          <button
+            onClick={handlePrevPage}
+            className={`p-2 rounded ${isDarkMode ? 'bg-yellow-500 text-black' : 'bg-blue-600 text-white'}`}
+          >
+            Prev
+          </button>
+          <div className={`text-lg ${isDarkMode ? 'text-yellow-500' : 'text-blue-600'}`}>
+            Page {currentPage}
+          </div>
+          <button
+            onClick={handleNextPage}
+            className={`p-2 rounded ${isDarkMode ? 'bg-yellow-500 text-black' : 'bg-blue-600 text-white'}`}
+          >
+            Next
+          </button>
+        </div>
         {selectedPokemon && (
           <PokemModal pokemon={selectedPokemon} onClose={handleCloseModal} isDarkMode={isDarkMode} />
         )}
