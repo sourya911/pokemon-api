@@ -4,23 +4,23 @@ import PokemCard from './PokemCard';
 import PokemModal from './PokemModal';
 import Filter from './Filter';
 import { FaSun, FaMoon, FaList, FaTh } from 'react-icons/fa';
-import PokemTable from './PokemTable'; // Import the PokemTable component here
+import PokemTable from './PokemTable';
 
 function PokemList() {
-  const [pokemon, setPokemon] = useState([]);
-  const [selectedPokemon, setSelectedPokemon] = useState(null);
-  const [types, setTypes] = useState([]);
-  const [selectedType, setSelectedType] = useState('');
-  const [pokemonLimit, setPokemonLimit] = useState(10);
-  const [inputLimit, setInputLimit] = useState(10);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isGridView, setIsGridView] = useState(true); // State to track the view mode
-  const [currentPage, setCurrentPage] = useState(1); // State to track the current page
-  const itemsPerPage = 16; // Number of items to display per page
-
-  const max_poke = 1302;
+  const [pokemon, setPokemon] = useState([]); // stores pokemon data
+  const [selectedPokemon, setSelectedPokemon] = useState(null); // to select pokemon for modal
+  const [types, setTypes] = useState([]); // to store pokemon types (Filters)
+  const [selectedType, setSelectedType] = useState(''); // to select filter of pokemon
+  const [pokemonLimit, setPokemonLimit] = useState(10); // to fetch this much pokemons on UI by default (this value can be changes in future)
+  const [inputLimit, setInputLimit] = useState(10); // to store user input 
+  const [isDarkMode, setIsDarkMode] = useState(true); // toggle between modes
+  const [isLoading, setIsLoading] = useState(false); // to show loading state
+  const [errorMessage, setErrorMessage] = useState(''); // show error message if presnet any
+  const [isGridView, setIsGridView] = useState(true); //toggle between grid and table view
+  const [currentPage, setCurrentPage] = useState(1);  // stores page number and tracks pagination
+  const itemsPerPage = 16; // number of pokemons per page
+ 
+  const max_poke = 1302;  //only this many pokemons presnet only , this helps inrender only this much pokemons if user needed much more than that
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -33,7 +33,7 @@ function PokemList() {
             return pokeDetails.data;
           })
         );
-        setPokemon(pokemonData);
+        setPokemon(pokemonData); //set pokemon data
       } catch (error) {
         setErrorMessage('Error fetching Pokémon data. Please try again later.');
         console.error("Error fetching Pokémon data:", error);
@@ -41,21 +41,22 @@ function PokemList() {
         setIsLoading(false);
       }
     };
-
+    // fetch types of pokemon
     const fetchTypes = async () => {
       try {
         const response = await axios.get('https://pokeapi.co/api/v2/type');
-        setTypes(response.data.results);
+        setTypes(response.data.results); // set data to types 
       } catch (error) {
         setErrorMessage('Error fetching types data. Please try again later.');
-        console.error("Error fetching types data:", error);
+        console.error("Error fetching types data:", error); 
       }
     };
 
     fetchPokemon();
     fetchTypes();
-  }, [pokemonLimit]);
+  }, [pokemonLimit]); // re fecth when limit changes
 
+  // handlers 
   const handlePokemonClick = (pokemon) => {
     setSelectedPokemon(pokemon);
   };
@@ -71,7 +72,7 @@ function PokemList() {
   const handleInputChange = (event) => {
     setInputLimit(event.target.value);
   };
-
+  // if value of user input is wrong and crosses limit this handler will handle 
   const handleSearchClick = () => {
     const limit = parseInt(inputLimit, 10);
     if (isNaN(limit) || limit <= 0) {
@@ -94,16 +95,18 @@ function PokemList() {
     setIsGridView(!isGridView);
   };
 
+  // handles next button click if pokemon present then renders on UI else gives error message
   const handleNextPage = () => {
     if (endIndex < filteredPokemon.length) {
       setCurrentPage((prevPage) => prevPage + 1);
-      setErrorMessage(''); // Clear any previous error message
+      setErrorMessage(''); 
     } else {
       alert('You have reached the last page of available Pokémon.')
       setErrorMessage('You have reached the last page of available Pokémon.');
     }
   };
 
+  //if prev button works means pokemons present then renders on UI else the error message is shown by default for first page 
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage((prevPage) => prevPage - 1);
@@ -114,6 +117,7 @@ function PokemList() {
     }
   };
 
+  // filter the pokemons by selsected filter
   const filteredPokemon = selectedType
     ? pokemon.filter(p => p.types && p.types.some(t => t.type.name === selectedType))
     : pokemon;
@@ -178,7 +182,7 @@ function PokemList() {
                   ))}
                 </div>
               ) : (
-                <PokemTable pokemon={currentPokemon} onPokemonClick={handlePokemonClick} isDarkMode={isDarkMode} /> // Pass props to PokemTable component
+                <PokemTable pokemon={currentPokemon} onPokemonClick={handlePokemonClick} isDarkMode={isDarkMode} /> 
               )
             ) : (
               <div className={`text-center ${isDarkMode ? 'text-yellow-500' : 'text-blue-600'}`}>No Pokémon available.</div>
